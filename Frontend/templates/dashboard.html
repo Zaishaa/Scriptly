@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scriptly — Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f7f8fc; }
+        .sidebar { background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); }
+        .card { background: white; border-radius: 16px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); }
+        .emotion-badge {
+            padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+        }
+        .joy { background: #fef9c3; color: #854d0e; }
+        .sadness { background: #dbeafe; color: #1e40af; }
+        .anger { background: #fee2e2; color: #991b1b; }
+        .fear { background: #ede9fe; color: #5b21b6; }
+        .love { background: #fce7f3; color: #9d174d; }
+        .surprise { background: #d1fae5; color: #065f46; }
+        .neutral { background: #f3f4f6; color: #374151; }
+        .entry-card {
+            background: white; border-radius: 12px; padding: 20px;
+            border: 2px solid #f0f0f0; transition: all 0.3s; cursor: pointer;
+        }
+        .entry-card:hover { border-color: #667eea; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.15); }
+        .btn-primary {
+            padding: 10px 20px; background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; border: none; border-radius: 10px; font-size: 14px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+        .btn-danger {
+            padding: 6px 12px; background: #fee2e2; color: #991b1b;
+            border: none; border-radius: 8px; font-size: 12px;
+            font-weight: 600; cursor: pointer;
+        }
+        .stat-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); }
+    </style>
+</head>
+<body>
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="sidebar w-64 min-h-screen p-6 flex flex-col">
+            <div class="mb-10">
+                <h1 class="text-white text-2xl font-bold">📔 Scriptly</h1>
+                <p class="text-purple-200 text-sm mt-1">Mental Health Journal</p>
+            </div>
+            <nav class="flex-1">
+                <a href="dashboard.html" class="flex items-center gap-3 text-white bg-white/20 rounded-xl px-4 py-3 mb-2 font-medium">
+                    🏠 Dashboard
+                </a>
+                <a href="journal_editor.html" class="flex items-center gap-3 text-purple-200 hover:text-white hover:bg-white/10 rounded-xl px-4 py-3 mb-2 transition-all">
+                    ✍️ New Entry
+                </a>
+                <a href="emotion_history.html" class="flex items-center gap-3 text-purple-200 hover:text-white hover:bg-white/10 rounded-xl px-4 py-3 mb-2 transition-all">
+                    📊 Emotion History
+                </a>
+            </nav>
+            <div class="mt-auto">
+                <div id="user-info" class="text-purple-200 text-sm mb-4"></div>
+                <button onclick="logout()" class="w-full text-left flex items-center gap-3 text-purple-200 hover:text-white hover:bg-white/10 rounded-xl px-4 py-3 transition-all">
+                    🚪 Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Welcome back! 👋</h2>
+                    <p class="text-gray-500" id="today-date"></p>
+                </div>
+                <a href="journal_editor.html">
+                    <button class="btn-primary">✍️ Write New Entry</button>
+                </a>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-3 gap-6 mb-8">
+                <div class="stat-card">
+                    <p class="text-gray-500 text-sm">Total Entries</p>
+                    <p class="text-3xl font-bold text-gray-800 mt-1" id="total-entries">0</p>
+                    <p class="text-green-500 text-sm mt-1">📔 Keep writing!</p>
+                </div>
+                <div class="stat-card">
+                    <p class="text-gray-500 text-sm">Analyzed Entries</p>
+                    <p class="text-3xl font-bold text-gray-800 mt-1" id="analyzed-entries">0</p>
+                    <p class="text-blue-500 text-sm mt-1">🧠 AI insights</p>
+                </div>
+                <div class="stat-card">
+                    <p class="text-gray-500 text-sm">Latest Emotion</p>
+                    <p class="text-3xl font-bold text-gray-800 mt-1" id="latest-emotion">—</p>
+                    <p class="text-purple-500 text-sm mt-1">💜 Detected by AI</p>
+                </div>
+            </div>
+
+            <!-- Journal Entries -->
+            <div class="card p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Your Journal Entries</h3>
+                <div id="entries-container">
+                    <div class="text-center py-12 text-gray-400">
+                        <p class="text-5xl mb-4">📔</p>
+                        <p class="text-lg">No entries yet</p>
+                        <p class="text-sm mt-2">Start writing your first journal entry!</p>
+                        <a href="journal_editor.html">
+                            <button class="btn-primary mt-4">Write First Entry</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../static/js/api.js"></script>
+    <script src="../static/js/journal.js"></script>
+</body>
+</html>

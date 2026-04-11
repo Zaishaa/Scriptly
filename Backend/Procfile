@@ -1,0 +1,1 @@
+web: gunicorn scriptly_project.wsgi:application

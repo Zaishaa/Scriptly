@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scriptly — Emotion History</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f7f8fc; }
+        .sidebar { background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); }
+        .card { background: white; border-radius: 16px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); }
+        .emotion-dot {
+            width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+        }
+        .history-row {
+            padding: 16px; border-bottom: 1px solid #f0f0f0;
+            transition: all 0.2s; cursor: pointer;
+        }
+        .history-row:hover { background: #f8f7ff; }
+        .progress-bar { height: 8px; border-radius: 4px; background: #e2e8f0; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="sidebar w-64 min-h-screen p-6 flex flex-col">
+            <div class="mb-10">
+                <h1 class="text-white text-2xl font-bold">📔 Scriptly</h1>
+                <p class="text-purple-200 text-sm mt-1">Mental Health Journal</p>
+            </div>
+            <nav class="flex-1">
+                <a href="dashboard.html" class="flex items-center gap-3 text-purple-200 hover:text-white hover:bg-white/10 rounded-xl px-4 py-3 mb-2 transition-all">
+                    🏠 Dashboard
+                </a>
+                <a href="journal_editor.html" class="flex items-center gap-3 text-purple-200 hover:text-white hover:bg-white/10 rounded-xl px-4 py-3 mb-2 transition-all">
+                    ✍️ New Entry
+                </a>
+                <a href="emotion_history.html" class="flex items-center gap-3 text-white bg-white/20 rounded-xl px-4 py-3 mb-2 font-medium">
+                    📊 Emotion History
+                </a>
+            </nav>
+            <button onclick="logout()" class="mt-auto text-left flex items-center gap-3 text-purple-200 hover:text-white hover:bg-white/10 rounded-xl px-4 py-3 transition-all">
+                🚪 Logout
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">Emotion History 📊</h2>
+                    <p class="text-gray-500">Track your emotional journey over time</p>
+                </div>
+
+                <!-- Emotion Summary Cards -->
+                <div class="grid grid-cols-6 gap-4 mb-8" id="emotion-summary">
+                    <!-- Filled by JS -->
+                </div>
+
+                <!-- History Table -->
+                <div class="card overflow-hidden">
+                    <div class="p-6 border-b border-gray-100">
+                        <h3 class="font-bold text-gray-800">All Emotion Analyses</h3>
+                    </div>
+                    <div id="history-container">
+                        <div class="text-center py-12 text-gray-400">
+                            <p class="text-4xl mb-3">📊</p>
+                            <p>Loading history...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../static/js/api.js"></script>
+    <script>
+        requireAuth();
+
+        const EMOTION_COLORS = {
+            joy: '#f59e0b', sadness: '#3b82f6', anger: '#ef4444',
+            fear: '#8b5cf6', love: '#ec4899', surprise: '#10b981', neutral: '#6b7280'
+        };
+
+        const EMOTION_EMOJIS = {
+            joy: '😄', sadness: '😢', anger: '😠',
+            fear: '😨', love: '❤️', surprise: '😲', neutral: '😐'
+        };
+
+        async function loadHistory() {
+            const res = await api.get('/nlp/history/');
+            if (!res || res.status !== 200) return;
+
+            const analyses = res.data.history || [];
+            const container = document.getElementById('history-container');
+            const summaryEl = document.getElementById('emotion-summary');
+
+            if (analyses.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-400">
+                        <p class="text-4xl mb-3">📔</p>
+                        <p>No analyses yet. Write and analyze some journal entries first!</p>
+                        <a href="journal_editor.html">
+                            <button class="mt-4 px-6 py-2 rounded-lg text-white font-semibold"
+                                style="background: linear-gradient(135deg, #667eea, #764ba2)">
+                                Write Entry
+                            </button>
+                        </a>
+                    </div>`;
+                return;
+            }
+
+            // Calculate emotion counts for summary
+            const emotionCounts = {};
+            analyses.forEach(a => {
+                emotionCounts[a.dominant_emotion] = (emotionCounts[a.dominant_emotion] || 0) + 1;
+            });
+
+            // Summary cards
+            summaryEl.innerHTML = Object.entries(emotionCounts).map(([emotion, count]) => `
+                <div class="card p-4 text-center">
+                    <p class="text-2xl mb-1">${EMOTION_EMOJIS[emotion] || '🧠'}</p>
+                    <p class="text-lg font-bold text-gray-800">${count}</p>
+                    <p class="text-xs text-gray-500 capitalize">${emotion}</p>
+                </div>
+            `).join('');
+
+            // History rows
+            container.innerHTML = analyses.map(analysis => `
+                <div class="history-row"
+                    onclick="window.location.href='emotion_result.html?entry_id=${analysis.journal_entry}'">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <span class="text-2xl">${EMOTION_EMOJIS[analysis.dominant_emotion] || '🧠'}</span>
+                            <div>
+                                <p class="font-semibold text-gray-800 capitalize">
+                                    ${analysis.journal_entry_title}
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    ${new Date(analysis.analyzed_at).toLocaleDateString('en-IN', {
+                                        day: 'numeric', month: 'short', year: 'numeric',
+                                        hour: '2-digit', minute: '2-digit'
+                                    })}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-32">
+                                <div class="progress-bar">
+                                    <div class="progress-fill"
+                                        style="width:${Math.round(analysis.confidence_score * 100)}%;
+                                               background:${EMOTION_COLORS[analysis.dominant_emotion]}">
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1 text-right">
+                                    ${Math.round(analysis.confidence_score * 100)}% confidence
+                                </p>
+                            </div>
+                            ${analysis.is_crisis
+                                ? '<span class="px-2 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-semibold">⚠️ Crisis</span>'
+                                : '<span class="px-2 py-1 bg-green-100 text-green-600 rounded-lg text-xs font-semibold">✅ Normal</span>'
+                            }
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        loadHistory();
+    </script>
+</body>
+</html>

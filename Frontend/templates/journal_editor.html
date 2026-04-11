@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scriptly — Write Entry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f7f8fc; }
+        .sidebar { background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); }
+        .card { background: white; border-radius: 16px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); }
+        .input-field {
+            width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0;
+            border-radius: 10px; font-size: 15px; transition: all 0.3s; outline: none;
+        }
+        .input-field:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        textarea.input-field { resize: vertical; min-height: 300px; line-height: 1.8; }
+        .btn-primary {
+            padding: 12px 24px; background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; border: none; border-radius: 10px; font-size: 15px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+        .btn-secondary {
+            padding: 12px 24px; background: white; color: #667eea;
+            border: 2px solid #667eea; border-radius: 10px; font-size: 15px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s;
+        }
+        .mood-btn {
+            padding: 8px 16px; border: 2px solid #e2e8f0; border-radius: 20px;
+            background: white; cursor: pointer; font-size: 14px; transition: all 0.3s;
+        }
+        .mood-btn.selected { border-color: #667eea; background: #eef2ff; color: #667eea; font-weight: 600; }
+        .success-msg { background: #f0fff4; border: 1px solid #9ae6b4; color: #276749; padding: 12px; border-radius: 8px; }
+        .error-msg { background: #fff5f5; border: 1px solid #feb2b2; color: #c53030; padding: 12px; border-radius: 8px; }
+        #char-count { font-size: 13px; color: #9ca3af; }
+    </style>
+</head>
+<body>
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="sidebar w-64 min-h-screen p-6 flex flex-col">
+            <div class="mb-10">
+                <h1 class="text-white text-2xl font-bold">📔 Scriptly</h1>
+                <p class="text-purple-200 text-sm mt-1">Mental Health Journal</p>
+            </div>
+            <nav class="flex-1">
+                <a href="dashboard.html" class="flex items-center gap-3 text-purple-200 hover:text-white hover:bg-white/10 rounded-xl px-4 py-3 mb-2 transition-all">
+                    🏠 Dashboard
+                </a>
+                <a href="journal_editor.html" class="flex items-center gap-3 text-white bg-white/20 rounded-xl px-4 py-3 mb-2 font-medium">
+                    ✍️ New Entry
+                </a>
+            </nav>
+            <button onclick="logout()" class="mt-auto text-left flex items-center gap-3 text-purple-200 hover:text-white hover:bg-white/10 rounded-xl px-4 py-3 transition-all">
+                🚪 Logout
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <div class="max-w-3xl mx-auto">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Write Your Thoughts ✍️</h2>
+                        <p class="text-gray-500">Express yourself freely — this is your safe space</p>
+                    </div>
+                    <a href="dashboard.html" class="text-gray-500 hover:text-gray-700">← Back</a>
+                </div>
+
+                <div id="alert-msg" class="mb-4 hidden"></div>
+
+                <div class="card p-8">
+                    <!-- Title -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Entry Title</label>
+                        <input type="text" id="entry-title" class="input-field" placeholder="Give your entry a title...">
+                    </div>
+
+                    <!-- Mood selector -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">How are you feeling today?</label>
+                        <div class="flex gap-3 flex-wrap">
+                            <button class="mood-btn" onclick="selectMood('great', this)">😄 Great</button>
+                            <button class="mood-btn" onclick="selectMood('good', this)">🙂 Good</button>
+                            <button class="mood-btn" onclick="selectMood('okay', this)">😐 Okay</button>
+                            <button class="mood-btn" onclick="selectMood('bad', this)">😔 Bad</button>
+                            <button class="mood-btn" onclick="selectMood('terrible', this)">😢 Terrible</button>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Your Journal Entry</label>
+                            <span id="char-count">0 characters</span>
+                        </div>
+                        <textarea id="entry-content" class="input-field"
+                            placeholder="Write freely... How was your day? What are you feeling? What's on your mind? There are no rules here — this is your safe space."
+                            oninput="updateCharCount()"></textarea>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex gap-4">
+                        <button onclick="saveEntry()" class="btn-primary" id="save-btn">
+                            💾 Save Entry
+                        </button>
+                        <button onclick="saveAndAnalyze()" class="btn-primary" id="analyze-btn" style="background: linear-gradient(135deg, #11998e, #38ef7d);">
+                            🧠 Save & Analyze Emotions
+                        </button>
+                        <button onclick="clearForm()" class="btn-secondary">
+                            🗑️ Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../static/js/api.js"></script>
+    <script src="../static/js/journal.js"></script>
+</body>
+</html>
