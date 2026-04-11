@@ -185,3 +185,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Whitenoise static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Memory optimization for free tier
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880
