@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
-import dj_database_url
+#import dj_database_url
 # Load environment variables from .env file
 load_dotenv()
 
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -79,6 +80,7 @@ WSGI_APPLICATION = 'scriptly_project.wsgi.application'
 #         'PORT': os.getenv('DB_PORT', '5432'),
 #     }
 # }
+
 
 # Database configuration
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -180,3 +182,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://scriptly-frontend.netlify.app",
 ]
 CORS_ALLOW_ALL_ORIGINS = True
+
+# Whitenoise static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
