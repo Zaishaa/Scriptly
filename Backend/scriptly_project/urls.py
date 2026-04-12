@@ -6,12 +6,12 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-def redirect_to_frontend(request):
-    return HttpResponseRedirect('http://127.0.0.1:5500/Frontend/templates/login.html')
+# def redirect_to_frontend(request):
+#     return HttpResponseRedirect('http://127.0.0.1:5500/Frontend/templates/login.html')
 
 
 urlpatterns = [
-    path('', redirect_to_frontend, name='home'),
+    #path('', redirect_to_frontend, name='home'),
 
     path('admin/', admin.site.urls),
 
