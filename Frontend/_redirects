@@ -1,0 +1,4 @@
+/                    /templates/login.html    200
+/login               /templates/login.html    200
+/register            /templates/register.html 200
+/dashboard           /templates/dashboard.html 200
