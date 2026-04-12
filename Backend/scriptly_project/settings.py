@@ -179,7 +179,7 @@ ALLOWED_HOSTS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5500",
     "http://127.0.0.1:5500",
-    "https://scriptly-frontend.netlify.app",
+    "https://scriptly-4f9503.netlify.app",
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
