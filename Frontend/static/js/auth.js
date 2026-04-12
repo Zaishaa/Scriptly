@@ -1,3 +1,6 @@
+const LOGIN_URL = 'https://scriptly-jl4l.onrender.com/api/accounts/login/';
+const REGISTER_URL = 'https://scriptly-jl4l.onrender.com/api/accounts/register/';
+
 // LOGIN
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
@@ -14,7 +17,7 @@ if (loginForm) {
         const password = document.getElementById('password').value;
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/accounts/login/', {
+            const response = await fetch(LOGIN_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -65,7 +68,7 @@ if (registerForm) {
         };
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/accounts/register/', {
+            const response = await fetch(REGISTER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
