@@ -11,7 +11,7 @@ from rest_framework_simplejwt.views import (
 
 
 urlpatterns = [
-    #path('', redirect_to_frontend, name='home'),
+    # path('', redirect_to_frontend, name='home'),
 
     path('admin/', admin.site.urls),
 
