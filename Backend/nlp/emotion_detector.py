@@ -24,7 +24,7 @@ class EmotionDetector:
 
                 self._pipeline = pipeline(
                     task="text-classification",
-                    model="j-hartmann/emotion-english-distilroberta-base",
+                    model="bhadresh-savani/distilbert-base-uncased-emotion",
                     top_k=None,
                     device=-1,  # Force CPU always
                     torch_dtype=torch.float32,
