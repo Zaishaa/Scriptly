@@ -290,3 +290,61 @@ if (document.getElementById('entries-container')) {
 if (editId) {
     loadEntryForEdit(editId);
 }
+
+// Load emergency contact
+async function loadEmergencyContact() {
+    const res = await api.get('/accounts/emergency-contact/');
+    if (res && res.status === 200) {
+        const contact = res.data;
+        document.getElementById('contact-name').value = contact.contact_name || '';
+        document.getElementById('contact-email').value = contact.contact_email || '';
+        document.getElementById('contact-phone').value = contact.contact_phone || '';
+        const statusEl = document.getElementById('contact-status');
+        if (statusEl) {
+            statusEl.innerHTML = '✅ Emergency contact is set!';
+            statusEl.className = 'flex items-center text-sm text-green-600 font-medium';
+        }
+    }
+}
+
+// Save emergency contact
+async function saveEmergencyContact() {
+    const name = document.getElementById('contact-name')?.value;
+    const email = document.getElementById('contact-email')?.value;
+    const phone = document.getElementById('contact-phone')?.value;
+    const msgDiv = document.getElementById('contact-msg');
+
+    if (!name || !email) {
+        msgDiv.className = 'mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg';
+        msgDiv.textContent = '❌ Contact name and email are required!';
+        msgDiv.classList.remove('hidden');
+        return;
+    }
+
+    const res = await api.post('/accounts/emergency-contact/', {
+        contact_name: name,
+        contact_email: email,
+        contact_phone: phone || ''
+    });
+
+    if (res && (res.status === 201 || res.status === 200)) {
+        msgDiv.className = 'mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg';
+        msgDiv.textContent = '✅ Emergency contact saved! They will be notified if our AI detects distress.';
+        msgDiv.classList.remove('hidden');
+        const statusEl = document.getElementById('contact-status');
+        if (statusEl) {
+            statusEl.innerHTML = '✅ Contact saved!';
+            statusEl.className = 'flex items-center text-sm text-green-600 font-medium';
+        }
+        setTimeout(() => msgDiv.classList.add('hidden'), 4000);
+    } else {
+        msgDiv.className = 'mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg';
+        msgDiv.textContent = '❌ Failed to save. Please try again.';
+        msgDiv.classList.remove('hidden');
+    }
+}
+
+// Load emergency contact if on dashboard
+if (document.getElementById('contact-form')) {
+    loadEmergencyContact();
+}

@@ -24,7 +24,7 @@ class EmotionDetector:
 
                 self._pipeline = pipeline(
                     task="text-classification",
-                    model="bhadresh-savani/distilbert-base-uncased-emotion",
+                    model="j-hartmann/emotion-english-distilroberta-base",
                     top_k=None,
                     device=-1,  # Force CPU always
                     torch_dtype=torch.float32,
@@ -88,18 +88,24 @@ class EmotionDetector:
         crisis_keywords = [
             'suicide', 'kill myself', 'end my life', 'want to die',
             'self harm', 'hurt myself', 'no reason to live',
-            'give up on life', 'cant go on', "can't go on"
+            'give up on life', 'cant go on', "can't go on",
+            # ADD these passive ideation patterns:
+            'without me', 'fading out', 'no one notices', 'no one would notice',
+            'slowly disappearing', 'go on without me', 'nothing i do matters',
+            'fading away', 'dont matter', "don't matter"
         ]
-
         text_lower = text.lower()
         keyword_crisis = any(kw in text_lower for kw in crisis_keywords)
 
         sadness = emotion_scores.get('sadness', 0)
         fear = emotion_scores.get('fear', 0)
         anger = emotion_scores.get('anger', 0)
-        score_crisis = (sadness > 0.85) or (fear > 0.85) or (anger > 0.85)
+        # Also flag if sadness+fear combined is high, even if neither alone hits 0.85
+        combined_distress = sadness + fear
+        score_crisis = (sadness > 0.75) or (fear > 0.85) or (anger > 0.85) or (combined_distress > 1.2)
 
         return keyword_crisis or score_crisis
+
 
     def _default_emotions(self):
         return {
@@ -115,3 +121,5 @@ class EmotionDetector:
             },
             'is_crisis': False
         }
+    
+    

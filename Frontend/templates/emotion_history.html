@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scriptly — Emotion History</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background: #f7f8fc; }
@@ -59,6 +60,31 @@
                     <!-- Filled by JS -->
                 </div>
 
+                <!-- Emotion Trend Graph -->
+                <div class="card p-6 mb-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="font-bold text-gray-800">Emotion Trends Over Time</h3>
+                            <p class="text-sm text-gray-400 mt-1">Your emotional journey across journal entries</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="filterChart('all')" id="filter-all"
+                                class="px-3 py-1 text-xs rounded-lg font-semibold bg-purple-600 text-white transition-all">
+                                All
+                            </button>
+                            <button onclick="filterChart('negative')" id="filter-negative"
+                                class="px-3 py-1 text-xs rounded-lg font-semibold bg-gray-100 text-gray-600 transition-all">
+                                Negative
+                            </button>
+                            <button onclick="filterChart('positive')" id="filter-positive"
+                                class="px-3 py-1 text-xs rounded-lg font-semibold bg-gray-100 text-gray-600 transition-all">
+                                Positive
+                            </button>
+                        </div>
+                    </div>
+                    <canvas id="emotionChart" height="100"></canvas>
+                </div>
+
                 <!-- History Table -->
                 <div class="card overflow-hidden">
                     <div class="p-6 border-b border-gray-100">
@@ -89,15 +115,101 @@
             fear: '😨', love: '❤️', surprise: '😲', neutral: '😐'
         };
 
+        let emotionChart = null;
+        let allAnalyses = [];
+
+        const ALL_DATASETS = [
+            { key: 'joy_score',      label: '😊 Joy',      color: '#f59e0b' },
+            { key: 'sadness_score',  label: '😢 Sadness',  color: '#3b82f6' },
+            { key: 'anger_score',    label: '😠 Anger',    color: '#ef4444' },
+            { key: 'fear_score',     label: '😨 Fear',     color: '#8b5cf6' },
+            { key: 'love_score',     label: '❤️ Love',     color: '#ec4899' },
+            { key: 'surprise_score', label: '😲 Surprise', color: '#10b981' },
+        ];
+
+        const NEGATIVE = ['sadness_score', 'anger_score', 'fear_score'];
+        const POSITIVE = ['joy_score', 'love_score', 'surprise_score'];
+
+        function buildChart(analyses, filter = 'all') {
+            const labels = [...analyses].reverse().map(a =>
+                a.journal_entry_title.length > 15
+                    ? a.journal_entry_title.substring(0, 15) + '...'
+                    : a.journal_entry_title
+            );
+
+            const activeDatasets = ALL_DATASETS.filter(d => {
+                if (filter === 'negative') return NEGATIVE.includes(d.key);
+                if (filter === 'positive') return POSITIVE.includes(d.key);
+                return true;
+            });
+
+            const datasets = activeDatasets.map(d => ({
+                label: d.label,
+                data: [...analyses].reverse().map(a => Math.round((a[d.key] || 0) * 100)),
+                borderColor: d.color,
+                backgroundColor: d.color + '20',
+                borderWidth: 2.5,
+                pointBackgroundColor: d.color,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                tension: 0.4,
+                fill: false,
+            }));
+
+            if (emotionChart) emotionChart.destroy();
+
+            const ctx = document.getElementById('emotionChart').getContext('2d');
+            emotionChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { usePointStyle: true, padding: 20, font: { size: 12 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}%`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 0, max: 100,
+                            ticks: { callback: val => val + '%', font: { size: 11 } },
+                            grid: { color: '#f0f0f0' }
+                        },
+                        x: {
+                            ticks: { font: { size: 11 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function filterChart(filter) {
+            ['all', 'negative', 'positive'].forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                btn.className = f === filter
+                    ? 'px-3 py-1 text-xs rounded-lg font-semibold bg-purple-600 text-white transition-all'
+                    : 'px-3 py-1 text-xs rounded-lg font-semibold bg-gray-100 text-gray-600 transition-all';
+            });
+            buildChart(allAnalyses, filter);
+        }
+
         async function loadHistory() {
             const res = await api.get('/nlp/history/');
             if (!res || res.status !== 200) return;
 
-            const analyses = res.data.history || [];
+            allAnalyses = res.data.history || [];
             const container = document.getElementById('history-container');
             const summaryEl = document.getElementById('emotion-summary');
 
-            if (analyses.length === 0) {
+            if (allAnalyses.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-12 text-gray-400">
                         <p class="text-4xl mb-3">📔</p>
@@ -112,9 +224,12 @@
                 return;
             }
 
+            // Build chart
+            buildChart(allAnalyses, 'all');
+
             // Calculate emotion counts for summary
             const emotionCounts = {};
-            analyses.forEach(a => {
+            allAnalyses.forEach(a => {
                 emotionCounts[a.dominant_emotion] = (emotionCounts[a.dominant_emotion] || 0) + 1;
             });
 
@@ -128,7 +243,7 @@
             `).join('');
 
             // History rows
-            container.innerHTML = analyses.map(analysis => `
+            container.innerHTML = allAnalyses.map(analysis => `
                 <div class="history-row"
                     onclick="window.location.href='emotion_result.html?entry_id=${analysis.journal_entry}'">
                     <div class="flex items-center justify-between">

@@ -1,4 +1,4 @@
-requireAuth();
+requireAuth()
 
 const EMOTION_EMOJIS = {
     joy: '😄', sadness: '😢', anger: '😠',

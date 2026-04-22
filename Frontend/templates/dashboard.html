@@ -22,7 +22,7 @@
         .neutral { background: #f3f4f6; color: #374151; }
         .entry-card {
             background: white; border-radius: 12px; padding: 20px;
-            border: 2px solid #f0f0f0; transition: all 0.3s; cursor: pointer;
+            border: 2px solid #f0f0f0; transition: all 0.3s;
         }
         .entry-card:hover { border-color: #667eea; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.15); }
         .btn-primary {
@@ -37,6 +37,11 @@
             font-weight: 600; cursor: pointer;
         }
         .stat-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); }
+        .input-field {
+            width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0;
+            border-radius: 10px; font-size: 14px; transition: all 0.3s; outline: none;
+        }
+        .input-field:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
     </style>
 </head>
 <body>
@@ -99,7 +104,7 @@
             </div>
 
             <!-- Journal Entries -->
-            <div class="card p-6">
+            <div class="card p-6 mb-6">
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Your Journal Entries</h3>
                 <div id="entries-container">
                     <div class="text-center py-12 text-gray-400">
@@ -112,6 +117,68 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Emergency Contact Section -->
+            <div class="card p-6" style="border-left: 4px solid #ef4444;">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="text-2xl">🆘</span>
+                    <h3 class="text-lg font-bold text-gray-800">Emergency Contact</h3>
+                </div>
+                <p class="text-gray-500 text-sm mb-5">
+                    If our AI detects severe emotional distress in your journal entries,
+                    we will automatically notify this person via email. Please add someone
+                    you trust — a parent, friend, or counselor.
+                </p>
+
+                <!-- Crisis info banner -->
+                <div class="mb-5 p-4 rounded-xl" style="background: #fff5f5; border: 1px solid #feb2b2;">
+                    <p class="text-sm font-semibold text-red-700 mb-1">⚠️ When will they be notified?</p>
+                    <p class="text-sm text-red-600">
+                        An alert is sent when our AI detects sadness, fear, or anger
+                        above 85% confidence, or if crisis keywords are detected in your writing.
+                    </p>
+                </div>
+
+                <div id="contact-form">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Contact Name *
+                            </label>
+                            <input type="text" id="contact-name"
+                                class="input-field"
+                                placeholder="Mom, Dad, Best Friend...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Contact Email *
+                            </label>
+                            <input type="email" id="contact-email"
+                                class="input-field"
+                                placeholder="their@email.com">
+                        </div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Contact Phone (Optional)
+                        </label>
+                        <input type="text" id="contact-phone"
+                            class="input-field"
+                            placeholder="+91 98765 43210">
+                    </div>
+
+                    <div id="contact-msg" class="mb-4 hidden"></div>
+
+                    <div class="flex gap-3">
+                        <button onclick="saveEmergencyContact()" class="btn-primary">
+                            💾 Save Emergency Contact
+                        </button>
+                        <div id="contact-status" class="flex items-center text-sm text-gray-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 

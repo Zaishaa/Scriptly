@@ -64,3 +64,10 @@ class TextPreprocessor:
         if len(words) > 400:
             text = ' '.join(words[:400])
         return text
+    
+    def clean_text(self, text):
+        text = re.sub(r'http\S+|www\S+', '', text)
+        # FIX: Keep apostrophes so "don't", "I'm", "I've" survive intact
+        text = re.sub(r"[^\w\s\.\!\?\']", '', text)
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text

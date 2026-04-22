@@ -1,7 +1,13 @@
-const LOGIN_URL = 'https://scriptly-jl4l.onrender.com/api/accounts/login/';
-const REGISTER_URL = 'https://scriptly-jl4l.onrender.com/api/accounts/register/';
+const LOGIN_URL = (window.location.hostname === 'localhost' || 
+                   window.location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:8000/api/accounts/login/'
+    : 'https://scriptly-jl4l.onrender.com/api/accounts/login/';
 
-// LOGIN
+const REGISTER_URL = (window.location.hostname === 'localhost' || 
+                      window.location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:8000/api/accounts/register/'
+    : 'https://scriptly-jl4l.onrender.com/api/accounts/register/';
+
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -22,7 +28,6 @@ if (loginForm) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
-
             const data = await response.json();
 
             if (response.ok) {
@@ -31,11 +36,11 @@ if (loginForm) {
                 localStorage.setItem('user', JSON.stringify(data.user));
                 window.location.href = 'dashboard.html';
             } else {
-                errorDiv.textContent = data.error || 'Login failed. Please try again.';
+                errorDiv.textContent = data.error || 'Login failed.';
                 errorDiv.classList.remove('hidden');
             }
         } catch (err) {
-            errorDiv.textContent = 'Server error. Make sure the backend is running.';
+            errorDiv.textContent = 'Server error. Make sure backend is running.';
             errorDiv.classList.remove('hidden');
         }
 
@@ -44,7 +49,6 @@ if (loginForm) {
     });
 }
 
-// REGISTER
 const registerForm = document.getElementById('register-form');
 if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
@@ -73,7 +77,6 @@ if (registerForm) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-
             const result = await response.json();
 
             if (response.ok) {
@@ -89,7 +92,7 @@ if (registerForm) {
                 errorDiv.classList.remove('hidden');
             }
         } catch (err) {
-            errorDiv.textContent = 'Server error. Make sure the backend is running.';
+            errorDiv.textContent = 'Server error. Make sure backend is running.';
             errorDiv.classList.remove('hidden');
         }
 
